@@ -45,4 +45,4 @@ def compare_pdfs(pdf1_path, pdf2_path, output_path):
 
 
 # Example usage
-compare_pdfs("Doc1.pdf", "Doc2.pdf", "diff.pdf")
+compare_pdfs("file1.pdf", "file2.pdf", "diff.pdf")

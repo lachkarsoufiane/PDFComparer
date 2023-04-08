@@ -2,6 +2,8 @@ import argparse
 from io import BytesIO
 import difflib
 import pdfplumber
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
 
 
 def compare_pdfs(pdf1, pdf2):
@@ -36,10 +38,31 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Compare two PDF files")
     parser.add_argument("pdf1", help="Path to the first PDF file")
     parser.add_argument("pdf2", help="Path to the second PDF file")
+    parser.add_argument("output", help="Path to the output PDF file")
     args = parser.parse_args()
 
     # Compara los archivos PDF e imprime la salida
     pdf1_bytes = open(args.pdf1, "rb").read()
     pdf2_bytes = open(args.pdf2, "rb").read()
-    output = compare_pdfs(BytesIO(pdf1_bytes), BytesIO(pdf2_bytes))
-    print(output)
+    output_text = compare_pdfs(BytesIO(pdf1_bytes), BytesIO(pdf2_bytes))
+
+    # Crea un nuevo documento PDF y escribe la salida
+    with open(args.output, "wb") as f:
+        c = canvas.Canvas(f, pagesize=letter)
+
+        # Agrega el texto a la página
+        textobject = c.beginText()
+        textobject.setTextOrigin(50, 750)
+        textobject.setFont("Helvetica", 12)
+        for line in output_text.split("\n"):
+            textobject.textLine(line)
+        c.drawText(textobject)
+
+        # Agrega un marcador para el texto
+        c.bookmarkPage("Differences")
+        c.addOutlineEntry("Differences", "Differences", 0)
+
+        c.showPage()
+        c.save()
+
+    print(f"Output saved to {args.output}")
